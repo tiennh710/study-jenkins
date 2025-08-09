@@ -1,0 +1,51 @@
+version: '3.9'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: unless-stopped
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - jenkins-net
+
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - jenkins
+    networks:
+      - jenkins-net
+
+  agent1:
+    image: ubuntu:22.04
+    container_name: agent1
+    tty: true
+    stdin_open: true
+    command: tail -f /dev/null
+    networks:
+      - jenkins-net
+
+  agent2:
+    image: ubuntu:22.04
+    container_name: agent2
+    tty: true
+    stdin_open: true
+    command: tail -f /dev/null
+    networks:
+      - jenkins-net
+
+volumes:
+  jenkins_home:
+
+networks:
+  jenkins-net:
+    driver: bridge
