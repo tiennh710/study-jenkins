@@ -1,51 +1,42 @@
-version: '3.9'
+version: '3.8'
 
 services:
   jenkins:
-    image: jenkins/jenkins:lts
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
     container_name: jenkins
-    restart: unless-stopped
-    user: root
+    environment:
+      - AGENT_HOSTS=agent1 agent2
     ports:
-      - "8080:8080"   # Jenkins UI
-      - "50000:50000" # JNLP agent communication
+      - "8080:8080"
+      - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
-    networks:
-      - jenkins-net
-
-  nginx:
-    build: ./nginx
-    container_name: nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
     depends_on:
-      - jenkins
+      - agent1
+      - agent2
     networks:
-      - jenkins-net
+      - jenkins_net
 
   agent1:
-    build: ./agents
+    image: ubuntu:22.04
     container_name: agent1
-    restart: unless-stopped
-    ports:
-      - "2222:22"  # SSH port for testing
+    command: sleep infinity
+    tty: true
     networks:
-      - jenkins-net
+      - jenkins_net
 
   agent2:
-    build: ./agents
+    image: ubuntu:22.04
     container_name: agent2
-    restart: unless-stopped
-    ports:
-      - "2223:22"
+    command: sleep infinity
+    tty: true
     networks:
-      - jenkins-net
+      - jenkins_net
+
+networks:
+  jenkins_net:
 
 volumes:
   jenkins_home:
-
-networks:
-  jenkins-net:
-    driver: bridge
