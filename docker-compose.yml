@@ -7,8 +7,8 @@ services:
     restart: unless-stopped
     user: root
     ports:
-      - "8080:8080"
-      - "50000:50000"
+      - "8080:8080"   # Jenkins UI
+      - "50000:50000" # JNLP agent communication
     volumes:
       - jenkins_home:/var/jenkins_home
     networks:
@@ -26,20 +26,20 @@ services:
       - jenkins-net
 
   agent1:
-    image: ubuntu:22.04
+    build: ./agents
     container_name: agent1
-    tty: true
-    stdin_open: true
-    command: tail -f /dev/null
+    restart: unless-stopped
+    ports:
+      - "2222:22"  # SSH port for testing
     networks:
       - jenkins-net
 
   agent2:
-    image: ubuntu:22.04
+    build: ./agents
     container_name: agent2
-    tty: true
-    stdin_open: true
-    command: tail -f /dev/null
+    restart: unless-stopped
+    ports:
+      - "2223:22"
     networks:
       - jenkins-net
 
